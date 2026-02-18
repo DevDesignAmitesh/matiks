@@ -1,5 +1,5 @@
+import { LandingPage } from "@/pages/landingpage";
+
 export default function Home() {
-  return (
-    <div className="text-3xl font-bebas">hellooo</div>
-  );
+  return <LandingPage />;
 }
