@@ -9,28 +9,36 @@ interface ShowcaseProps {
 
 export const Showcase = ({ content, direction, img, title }: ShowcaseProps) => {
   return (
-    <div className="w-full h-auto py-20">
+    <section className="w-full py-16 md:py-24 px-6">
       <div
-        className={`h-full w-full flex ${direction === "row" ? "flex-row" : "flex-row-reverse"} justify-between items-center max-w-6xl mx-auto`}
+        className={`max-w-6xl mx-auto flex flex-col items-center gap-12 md:gap-20 ${
+          direction === "row" ? "md:flex-row" : "md:flex-row-reverse"
+        }`}
       >
-        <Image
-          unoptimized
-          src={img}
-          alt="Showcase Img"
-          width={100}
-          height={100}
-          className="w-md"
-        />
+        {/* Image */}
+        <div className="flex-1 flex justify-center">
+          <Image
+            src={img}
+            alt="Showcase Image"
+            width={600}
+            height={600}
+            className="w-72 sm:w-80 md:w-96 lg:w-105 h-auto object-contain"
+          />
+        </div>
 
-        <div className="flex flex-col">
-          <h1 className="font-bebas font-extrabold text-white max-w-md">
-            <span className="block text-7xl">{title}</span>
-          </h1>
-          <p className="mt-6 mb-14 text-md text-neutral-400 max-w-md font-nuni">
+        {/* Text */}
+        <div className="flex-1 text-center md:text-left">
+          <h2 className="font-bebas font-extrabold text-white leading-tight">
+            <span className="block text-4xl sm:text-5xl md:text-6xl lg:text-7xl">
+              {title}
+            </span>
+          </h2>
+
+          <p className="mt-6 text-base sm:text-lg text-neutral-400 max-w-md mx-auto md:mx-0 font-nuni">
             {content}
           </p>
         </div>
       </div>
-    </div>
+    </section>
   );
 };

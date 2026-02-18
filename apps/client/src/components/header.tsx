@@ -3,15 +3,19 @@ import { Logo } from "./logo";
 
 export const Header = () => {
   return (
-    <header className="w-full font-nuni py-6 font-semibold">
+    <header className="w-full font-nuni py-6 font-semibold md:px-0 px-10">
       <div className="w-full max-w-6xl mx-auto flex justify-between items-center text-neutral-50">
         <Logo type="header" />
 
         {/* nav items */}
         <div className="flex justify-center items-center gap-20">
-          <Link href={"#"} className="hover:underline">Privacy Policy</Link>
-          <Link href={"#"} className="hover:underline">Blogs</Link>
-          <button className="border border-neutral-500 py-4 px-8 cursor-pointer">
+          <Link href={"#"} className="hover:underline md:block hidden">
+            Privacy Policy
+          </Link>
+          <Link href={"#"} className="hover:underline md:block hidden">
+            Blogs
+          </Link>
+          <button className="border border-neutral-500 md:py-4 py-3 md:px-8 px-4 md:text-base text-sm cursor-pointer">
             Play On Desktop
           </button>
         </div>
