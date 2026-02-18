@@ -1,3 +1,4 @@
+import { Footer } from "@/components/footer";
 import { Header } from "@/components/header";
 import { Hero } from "@/components/hero";
 import { Showcase } from "@/components/showcase";
@@ -5,9 +6,10 @@ import { TotalUsers } from "@/components/totalusers";
 
 export const LandingPage = () => {
   return (
-    <div className="w-full min-h-screen bg-[#1A1A1A]">
+    <div className="w-full min-h-screen bg-neutral-900">
       <Header />
       <Hero />
+
       <Showcase
         direction="row"
         img="/trophy.webp"
@@ -34,6 +36,8 @@ export const LandingPage = () => {
       />
 
       <TotalUsers />
+
+      <Footer />
     </div>
   );
 };

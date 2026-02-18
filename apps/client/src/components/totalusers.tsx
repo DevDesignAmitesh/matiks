@@ -1,7 +1,7 @@
 export const TotalUsers = () => {
   return (
     <div className="h-auto w-full py-40 bg-neutral-950 flex flex-col justify-center items-center gap-10">
-      <h1 className="text-[#B1FA63] text-[120px] leading-[0.9] tracking-tight font-bebas opacity-20">
+      <h1 className="text-[#B1FA63] text-[120px] leading-[0.9] tracking-tight font-bebas opacity-35">
         TOTAL USERS
       </h1>
 

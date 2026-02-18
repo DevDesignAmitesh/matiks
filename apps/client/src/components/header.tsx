@@ -5,7 +5,7 @@ export const Header = () => {
   return (
     <header className="w-full font-nuni py-6 font-semibold">
       <div className="w-full max-w-6xl mx-auto flex justify-between items-center text-neutral-50">
-        <Logo />
+        <Logo type="header" />
 
         {/* nav items */}
         <div className="flex justify-center items-center gap-20">
