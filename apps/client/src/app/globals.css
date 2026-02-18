@@ -1,0 +1,6 @@
+@import "tailwindcss";
+
+@theme inline {
+  --font-bebas: var(--font-bebas);
+  --font-nuni: var(--font-nuni);
+}
