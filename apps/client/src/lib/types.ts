@@ -1,1 +1,1 @@
-type popupType = "play" | "download";
+type popupType = "play" | "download" | "login" | "signup";

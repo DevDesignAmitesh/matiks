@@ -51,7 +51,13 @@ export const LandingPage = () => {
         <Footer onClick={(val) => handlePopup(val)} />
       </div>
 
-      {popup && <PopupScreen type={popup} onClick={() => handlePopup(null)} />}
+      {popup && (
+        <PopupScreen
+          type={popup}
+          onClick={() => handlePopup(null)}
+          handleAuthState={(val) => handlePopup(val)}
+        />
+      )}
     </>
   );
 };
