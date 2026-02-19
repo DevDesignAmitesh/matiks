@@ -38,19 +38,19 @@ export const Hero = ({ onClick }: HeroProps) => {
         {/* Right - Text */}
         <div className="flex-1 text-center md:text-left">
 
-          <h1 className="font-bebas font-extrabold leading-[0.95] tracking-tight text-white">
-            <span className="block text-5xl sm:text-6xl md:text-8xl lg:text-[110px]">
+          <h1 className="font-bebas font-extrabold tracking-tight text-white">
+            <span className="block text-5xl sm:text-6xl md:text-8xl lg:text-[130px] leading-20">
               TURN SCREEN
             </span>
-            <span className="block text-5xl sm:text-6xl md:text-8xl lg:text-[110px]">
+            <span className="block text-5xl sm:text-6xl md:text-8xl lg:text-[130px] leading-40">
               TIME INTO
             </span>
-            <span className="block text-5xl sm:text-6xl md:text-8xl lg:text-[110px] text-[#B1FA63]">
+            <span className="block text-5xl sm:text-6xl md:text-8xl lg:text-[130px] leading-20 text-[#B1FA63]">
               SMART TIME
             </span>
           </h1>
 
-          <p className="mt-6 mb-10 text-base sm:text-lg text-neutral-300 max-w-md mx-auto md:mx-0">
+          <p className="mt-6 mb-10 text-base sm:text-lg text-neutral-400 max-w-md mx-auto md:mx-0">
             Fast mental duels against real players.
           </p>
 
