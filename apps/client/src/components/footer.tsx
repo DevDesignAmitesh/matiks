@@ -1,22 +1,21 @@
 import Image from "next/image";
 import { Logo } from "./logo";
 import { TbArrowUpRight } from "react-icons/tb";
-import { GreenButton } from "./buttons";
+import { BlackButton, OutlineButton } from "./buttons";
 import { FaDiscord, FaTwitter, FaYoutube, FaInstagram } from "react-icons/fa";
 
 export const Footer = () => {
   return (
-    <footer className="w-full bg-neutral-900 px-6 pt-20 pb-8 space-y-10">
+    <footer className="w-full bg-neutral-900 px-6 pt-10 pb-4 space-y-2">
       {/* ===== CTA SECTION ===== */}
-      <section className="max-w-6xl mx-auto flex flex-col md:flex-row gap-6">
+      <section className="max-w-6xl h-full mx-auto flex flex-col justify-center items-center md:flex-row gap-2">
         {/* Social Grid */}
-        <div className="w-full md:w-1/3 grid grid-cols-2 gap-3">
+        <div className="w-full md:w-1/3 grid grid-cols-2 gap-1 h-full">
           {[FaDiscord, FaTwitter, FaYoutube, FaInstagram].map((Icon, index) => (
             <div
               key={index}
-              className="aspect-square bg-white rounded-2xl 
-                flex items-center justify-center
-                transition hover:-translate-y-1 hover:shadow-lg cursor-pointer"
+              className="aspect-square bg-white rounded-4xl 
+                flex items-center justify-center cursor-pointer h-full"
             >
               <Icon className="text-black text-3xl sm:text-4xl md:text-5xl" />
             </div>
@@ -43,8 +42,8 @@ export const Footer = () => {
           </div>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center sm:justify-start">
-            <GreenButton />
-            <GreenButton />
+            <BlackButton label="DOWNLOAD APP" onClick={() => {}} />
+            <OutlineButton label="PLAY ON BROWSER" onClick={() => {}} />
           </div>
         </div>
       </section>

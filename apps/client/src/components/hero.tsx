@@ -50,10 +50,7 @@ export const Hero = () => {
             Fast mental duels against real players.
           </p>
 
-          <div className="flex justify-center md:justify-start">
-            <GreenButton />
-          </div>
-
+          <GreenButton label="DOWNLOAD NOW" onClick={() => {}} />
         </div>
       </div>
     </section>
