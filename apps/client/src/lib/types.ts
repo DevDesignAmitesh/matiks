@@ -1,0 +1,1 @@
+type popupType = "play" | "download";

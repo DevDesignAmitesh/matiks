@@ -4,7 +4,11 @@ import { TbArrowUpRight } from "react-icons/tb";
 import { BlackButton, OutlineButton } from "./buttons";
 import { FaDiscord, FaTwitter, FaYoutube, FaInstagram } from "react-icons/fa";
 
-export const Footer = () => {
+interface FooterProps {
+  onClick: (val: popupType) => void;
+}
+
+export const Footer = ({ onClick }: FooterProps) => {
   return (
     <footer className="w-full bg-neutral-900 px-6 pt-10 pb-4 space-y-2">
       {/* ===== CTA SECTION ===== */}
@@ -42,8 +46,14 @@ export const Footer = () => {
           </div>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center sm:justify-start">
-            <BlackButton label="DOWNLOAD APP" onClick={() => {}} />
-            <OutlineButton label="PLAY ON BROWSER" onClick={() => {}} />
+            <BlackButton
+              label="DOWNLOAD APP"
+              onClick={() => onClick("download")}
+            />
+            <OutlineButton
+              label="PLAY ON BROWSER"
+              onClick={() => onClick("play")}
+            />
           </div>
         </div>
       </section>

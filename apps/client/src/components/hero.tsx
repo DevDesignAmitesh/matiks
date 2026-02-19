@@ -1,7 +1,11 @@
 import Image from "next/image";
 import { GreenButton } from "./buttons";
 
-export const Hero = () => {
+interface HeroProps {
+  onClick: () => void;
+}
+
+export const Hero = ({ onClick }: HeroProps) => {
   return (
     <section className="relative w-full h-auto flex items-center justify-center overflow-hidden px-6">
 
@@ -50,7 +54,7 @@ export const Hero = () => {
             Fast mental duels against real players.
           </p>
 
-          <GreenButton label="DOWNLOAD NOW" onClick={() => {}} />
+          <GreenButton label="DOWNLOAD NOW" onClick={onClick} />
         </div>
       </div>
     </section>
