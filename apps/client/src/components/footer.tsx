@@ -45,7 +45,7 @@ export const Footer = ({ onClick }: FooterProps) => {
             />
           </div>
 
-          <div className="flex flex-col sm:flex-row gap-4 justify-center sm:justify-start">
+          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center sm:justify-start">
             <BlackButton
               label="DOWNLOAD APP"
               onClick={() => onClick("download")}

@@ -9,7 +9,7 @@ interface ShowcaseProps {
 
 export const Showcase = ({ content, direction, img, title }: ShowcaseProps) => {
   return (
-    <section className="w-full py-16 md:py-24 px-6">
+    <section className="w-full py-12 md:py-20 px-6">
       <div
         className={`max-w-6xl mx-auto flex flex-col items-center gap-12 md:gap-20 ${
           direction === "row" ? "md:flex-row" : "md:flex-row-reverse"

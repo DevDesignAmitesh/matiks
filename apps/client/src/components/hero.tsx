@@ -39,13 +39,13 @@ export const Hero = ({ onClick }: HeroProps) => {
         <div className="flex-1 text-center md:text-left">
 
           <h1 className="font-bebas font-extrabold tracking-tight text-white">
-            <span className="block text-5xl sm:text-6xl md:text-8xl lg:text-[130px] leading-20">
+            <span className="block text-5xl sm:text-6xl md:text-8xl lg:text-[130px] lg:leading-20">
               TURN SCREEN
             </span>
-            <span className="block text-5xl sm:text-6xl md:text-8xl lg:text-[130px] leading-40">
+            <span className="block text-5xl sm:text-6xl md:text-8xl lg:text-[130px] lg:leading-40">
               TIME INTO
             </span>
-            <span className="block text-5xl sm:text-6xl md:text-8xl lg:text-[130px] leading-20 text-[#B1FA63]">
+            <span className="block text-5xl sm:text-6xl md:text-8xl lg:text-[130px] lg:leading-20 text-[#B1FA63]">
               SMART TIME
             </span>
           </h1>
