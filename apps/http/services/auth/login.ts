@@ -32,6 +32,14 @@ export const loginHandler = async (req: Request, res: Response) => {
       });
     }
 
+    if(!exisitngUser.isVerified) {
+      return responsePlate({
+        res,
+        message: "user is not verified, please signup",
+        status: 403
+      })
+    }
+
     const isPasswordCorrect = await compare(password, exisitngUser.password)
 
     

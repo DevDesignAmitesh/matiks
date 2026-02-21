@@ -1,12 +1,12 @@
 import type { Request, Response } from "express";
 import { responsePlate } from "../../utils";
-import { sendFriendReqSchema, zodErrorMessage } from "@repo/common/common";
+import { friendReqSchema, zodErrorMessage } from "@repo/common/common";
 import { prisma } from "@repo/db/db";
 
 export const sendFriendReqHandler = async (req: Request, res: Response) => {
   try {
     const { userId } = req.user;
-    const { data, success, error } = sendFriendReqSchema.safeParse(req.body);
+    const { data, success, error } = friendReqSchema.safeParse(req.body);
 
     if (!success) {
       return responsePlate({
@@ -86,7 +86,7 @@ export const sendFriendReqHandler = async (req: Request, res: Response) => {
       message: "friend request sent",
       status: 201,
       data: {
-        // TODO: maybe something
+        otherUserId
       },
     });
   } catch (e) {

@@ -16,8 +16,13 @@ export const otpVerifySchema = z.object({
   otp: z.string(),
 });
 
-export const sendFriendReqSchema = z.object({
+export const friendReqSchema = z.object({
   otherUserId: z.uuid(),
+});
+
+export const acceptFriendReqSchema = z.object({
+  otherUserId: z.uuid(),
+  status: z.enum(["PENDING", "ACCEPTED", "IGNORED"]),
 });
 
 export const createGameSchema = z.object({
@@ -30,6 +35,9 @@ export const createGameSchema = z.object({
 export const MESSAGE_TYPE = {
   PING: "PING",
   PONG: "PONG",
+  READY: "READY",
+  GAME_ANSWER: "GAME_ANSWER",
+  ROUND_STARTED: "ROUND_STARTED",
   GAME_STARTS: "GAME_STARTS",
   GAME_REQUEST: "GAME_REQUEST",
   GAME_ACCEPT: "GAME_ACCEPT",

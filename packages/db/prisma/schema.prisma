@@ -13,6 +13,13 @@ enum friendRequestStatus {
   IGNORED
 }
 
+enum questionOperations {
+  ADD
+  SUB
+  MUL
+  DIV
+}
+
 enum gameStatus {
   WAITING_FOR_PLAYERS
   IN_PROGRESS
@@ -104,13 +111,12 @@ model FriendsMapUser {
 }
 
 model Question {
-  id         String   @id @default(uuid())
-  operation  String // "ADD", "SUB", "MUL", "DIV"
-  operand1   Int
-  operand2   Int
-  answer     Int
-  difficulty String // "EASY", "MEDIUM", "HARD"
-  createdAt  DateTime @default(now())
+  id        String             @id @default(uuid())
+  operation questionOperations
+  operand1  Int
+  operand2  Int
+  answer    Int
+  createdAt DateTime           @default(now())
 
   gameQuestions GameQuestion[]
   answers       UserAnswer[]

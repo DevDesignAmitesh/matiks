@@ -25,11 +25,67 @@ export const signupHandler = async (req: Request, res: Response) => {
     });
 
     if (existingUser) {
-      return responsePlate({
-        res,
-        message: "User already exists",
-        status: 400,
-      });
+      if (existingUser.isVerified) {
+        return responsePlate({
+          res,
+          message: "User already exists, please login",
+          status: 400,
+        });
+      } else if (!existingUser.isVerified) {
+        const hashedPassword = await hash(password, 4);
+        const userName = email.split("@")[0];
+
+        const user = await prisma.user.update({
+          where: { email },
+          data: {
+            password: hashedPassword,
+            userName: userName ?? email,
+          },
+        });
+
+        const value = Array.from({ length: 6 }, () =>
+          Math.floor(Math.random() * 10),
+        )
+          .join("")
+          .trim();
+
+        const minutes = 5;
+
+        const expiresAt = new Date(Date.now() + minutes * 60 * 1000);
+
+        const otp = await prisma.otp.upsert({
+          where: { identifier: user.email },
+          update: {
+            value,
+            expiresAt,
+          },
+          create: {
+            identifier: user.email,
+            value,
+            expiresAt,
+          },
+        });
+
+        const emailOtpRes = await emailService.sendEmail({
+          email: user.email,
+          name: user.userName,
+          otp: otp.value,
+        });
+
+        if (!emailOtpRes.success) {
+          return responsePlate({
+            res,
+            message: "unable to send otp on " + email,
+            status: 400,
+          });
+        }
+
+        return responsePlate({
+          res,
+          status: 201,
+          message: `OTP has been sent to ${email}`,
+        });
+      }
     }
 
     const hashedPassword = await hash(password, 4);
@@ -45,7 +101,9 @@ export const signupHandler = async (req: Request, res: Response) => {
 
     const value = Array.from({ length: 6 }, () =>
       Math.floor(Math.random() * 10),
-    ).join("");
+    )
+      .join("")
+      .trim();
 
     const minutes = 5;
 
@@ -70,7 +128,7 @@ export const signupHandler = async (req: Request, res: Response) => {
       otp: otp.value,
     });
 
-    if (!emailOtpRes) {
+    if (!emailOtpRes.success) {
       return responsePlate({
         res,
         message: "unable to send otp on " + email,

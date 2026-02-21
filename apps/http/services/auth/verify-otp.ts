@@ -29,7 +29,7 @@ export const verifyOtpHandler = async (req: Request, res: Response) => {
     if (!existingUser) {
       return responsePlate({
         res,
-        message: "user not found, please create account",
+        message: "user not found",
         status: 404,
       });
     }
@@ -41,7 +41,7 @@ export const verifyOtpHandler = async (req: Request, res: Response) => {
     if (!existingOtp) {
       return responsePlate({
         res,
-        message: "user not found, please create account",
+        message: "otp's session not found",
         status: 404,
       });
     }
@@ -49,7 +49,7 @@ export const verifyOtpHandler = async (req: Request, res: Response) => {
     if (otp.trim() !== existingOtp.value) {
       return responsePlate({
         res,
-        message: "invalid OTP",
+        message: "Invalid OTP",
         status: 403,
       });
     }

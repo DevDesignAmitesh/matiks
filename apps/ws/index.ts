@@ -18,11 +18,36 @@ interface User {
   inGame: boolean;
 }
 
+interface Question {
+  id: string;
+  operation: "ADD" | "SUB" | "MUL" | "DIV";
+  operand1: number;
+  operand2: number;
+  answer: number;
+  createdAt: Date;
+}
+// userId and users
 const users: Map<string, User> = new Map();
+
+// gameId and users
 const games: Map<string, User[]> = new Map();
 
-const verifyUser = (token: string) => {
-  return verify(token, process.env.JWT_SECRET!) as { userId: string };
+// gameId and questions
+const questions: Map<string, Question[]> = new Map();
+
+// gameId and question index
+const questionCounter: Map<string, number> = new Map();
+
+// question Id and answers at
+const questionTiming: Map<string, number> = new Map();
+
+const verifyUser = (token: string): { userId: string | null } => {
+  try {
+    return verify(token, process.env.JWT_SECRET!) as { userId: string };
+  } catch (e) {
+    console.log("error while verfying user in jwt ", e);
+    return { userId: null };
+  }
 };
 
 server.on("connection", (ws: ExtendedWS, req) => {
@@ -155,6 +180,8 @@ server.on("connection", (ws: ExtendedWS, req) => {
       users.forEach((usr) => {
         if (usr.ws === ws || !usr.isOnline || usr.inGame) return;
 
+        // TODO: we should add ranking based match making
+
         usr.ws.send(
           JSON.stringify({
             type: parsedData.type,
@@ -228,8 +255,185 @@ server.on("connection", (ws: ExtendedWS, req) => {
       inGameusers.forEach((usr) => {
         usr.ws.send(
           JSON.stringify({
-            type: MESSAGE_TYPE.GAME_STARTS,
+            type: MESSAGE_TYPE.READY,
             payload: { gameId: game.id },
+          }),
+        );
+      });
+    }
+
+    if (parsedData.type === MESSAGE_TYPE.GAME_STARTS) {
+      const { gameId } = parsedData.payload;
+
+      const game = await prisma.game.findFirst({
+        where: { id: gameId },
+      });
+
+      if (!game) {
+        ws.close();
+        return;
+      }
+
+      const randomQuestions = generateRandomQuesions();
+      questions.set(game.id, randomQuestions);
+
+      let counter = questionCounter.get(game.id) || 0;
+      questionCounter.set(game.id, counter);
+
+      const users = games.get(game.id);
+
+      if (!users) {
+        ws.close();
+        return;
+      }
+
+      const question = randomQuestions[counter]!;
+
+      const dbQuestion = await prisma.question.create({
+        data: {
+          answer: question.answer,
+          operand1: question.operand1,
+          operand2: question.operand2,
+          operation: question.operation,
+        },
+      });
+
+      await prisma.gameQuestion.create({
+        data: {
+          questionId: dbQuestion.id,
+          gameId,
+          orderIndex: counter,
+        },
+      });
+
+      questionTiming.set(question.id, Date.now());
+
+      users.forEach((usr) => {
+        usr.ws.send(
+          JSON.stringify({
+            type: MESSAGE_TYPE.ROUND_STARTED,
+            payload: {
+              question,
+            },
+          }),
+        );
+      });
+    }
+
+    if (parsedData.type === MESSAGE_TYPE.GAME_ANSWER) {
+      const { gameId, questionId, answer } = parsedData.payload;
+
+      const game = await prisma.game.findFirst({
+        where: { id: gameId },
+      });
+
+      if (!game) {
+        ws.close();
+        return;
+      }
+
+      const allQuestions = questions.get(game.id);
+
+      if (!allQuestions) {
+        ws.close();
+        return;
+      }
+
+      const question = allQuestions.find((qs) => qs.id === questionId);
+
+      if (!question) {
+        ws.close();
+        return;
+      }
+
+      // upserting the answer here
+
+      const submittedAt = questionTiming.get(question.id);
+
+      const timeSpent = Date.now() - submittedAt!;
+
+      await prisma.userAnswer.upsert({
+        where: {
+          gameId_userId_questionId: {
+            gameId,
+            questionId: question.id,
+            userId: ws.userId,
+          },
+        },
+        create: {
+          questionId: question.id,
+          gameId,
+          userId: ws.userId,
+          answer: Number(answer),
+          isCorrect: false,
+          timeSpent,
+        },
+        update: {},
+      });
+
+      if (question.answer !== Number(answer)) {
+        // we have already marked the question as isCoorect false so...
+        return;
+      }
+
+      // updating the status here for iscorrent true
+      await prisma.userAnswer.update({
+        where: {
+          gameId_userId_questionId: {
+            gameId,
+            questionId: question.id,
+            userId: ws.userId,
+          },
+        },
+        data: {
+          isCorrect: true,
+        },
+      });
+
+      // sending the next question to the user and create this question in db too
+
+      let counter = questionCounter.get(game.id)!
+      counter += 1;
+
+      questionCounter.set(game.id, counter);
+
+      const realQuestions = questions.get(game.id);
+
+      const realQs = realQuestions![counter]! 
+
+      const users = games.get(game.id);
+
+      if (!users) {
+        ws.close();
+        return;
+      }
+
+      const dbQuestion = await prisma.question.create({
+        data: {
+          answer: realQs.answer,
+          operand1: realQs.operand1,
+          operand2: realQs.operand2,
+          operation: realQs.operation,
+        },
+      });
+
+      await prisma.gameQuestion.create({
+        data: {
+          questionId: dbQuestion.id,
+          gameId,
+          orderIndex: counter,
+        },
+      });
+
+      questionTiming.set(realQs.id, Date.now());
+
+      users.forEach((usr) => {
+        usr.ws.send(
+          JSON.stringify({
+            type: MESSAGE_TYPE.ROUND_STARTED,
+            payload: {
+              question: realQs,
+            },
           }),
         );
       });
@@ -251,6 +455,10 @@ async function updateUserOnlineStatus(val: boolean, userId: string) {
 }
 
 async function sendOnlineUsers(users: Map<string, User>) {
+  // TODO: will this work??
+  console.log("just checking ", Object.keys(users));
+  if (Object.keys(users).length === 1) return;
+
   setInterval(() => {
     users.forEach((usr) => {
       if (!usr.wantOnlineUsers) return;
@@ -272,4 +480,29 @@ async function updateUserGameStatus(
     where: { id: userId },
     data: { status },
   });
+}
+
+function getRandomNums() {
+  let a = Math.floor(Math.random() * 10 * 6);
+  let b = Math.floor(Math.random() * 10 * 3);
+
+  return { a, b };
+}
+
+function generateRandomQuesions(): Question[] {
+  let arr: Question[] = [];
+
+  for (let i = 1; i <= 20; i++) {
+    const { a, b } = getRandomNums();
+
+    arr.push({
+      id: crypto.randomUUID(),
+      answer: a + b,
+      createdAt: new Date(),
+      operand1: a,
+      operand2: b,
+      operation: "ADD",
+    });
+  }
+  return arr;
 }

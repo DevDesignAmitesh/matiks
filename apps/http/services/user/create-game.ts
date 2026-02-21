@@ -29,6 +29,8 @@ export const createGameHandler = async (req: Request, res: Response) => {
       },
     });
 
+    // TODO: we have to create questions for this game.
+
     await prisma.gamePlayer.create({
       data: {
         gameId: game.id,
