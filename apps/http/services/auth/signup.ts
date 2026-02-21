@@ -51,8 +51,13 @@ export const signupHandler = async (req: Request, res: Response) => {
 
     const expiresAt = new Date(Date.now() + minutes * 60 * 1000);
 
-    const otp = await prisma.otp.create({
-      data: {
+    const otp = await prisma.otp.upsert({
+      where: { identifier: user.email },
+      update: {
+        value,
+        expiresAt,
+      },
+      create: {
         identifier: user.email,
         value,
         expiresAt,
