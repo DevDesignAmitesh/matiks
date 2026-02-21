@@ -79,7 +79,7 @@ model FriendsMapUser {
 
   status      friendRequestStatus @default(PENDING)
   requestedAt DateTime
-  respondedAt DateTime
+  respondedAt DateTime?
 
   senderId String
   sender   User   @relation("user_sender", fields: [senderId], references: [id])
@@ -127,9 +127,9 @@ model Game {
   createdBy          String
   mode               gameMode
   type               gameType
-  endTime            DateTime
-  startTime          DateTime
-  rematchRequestedBy String
+  endTime            DateTime?
+  startTime          DateTime?
+  rematchRequestedBy String?
   questions          GameQuestion[]
 
   timeLimit       Int

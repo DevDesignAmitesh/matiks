@@ -1,0 +1,4 @@
+-- AlterTable
+ALTER TABLE "Game" ALTER COLUMN "endTime" DROP NOT NULL,
+ALTER COLUMN "startTime" DROP NOT NULL,
+ALTER COLUMN "rematchRequestedBy" DROP NOT NULL;
