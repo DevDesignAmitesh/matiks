@@ -35,7 +35,7 @@ export const verifyOtpHandler = async (req: Request, res: Response) => {
     }
 
     const existingOtp = await prisma.otp.findFirst({
-      where: { email },
+      where: { identifier: email },
     });
 
     if (!existingOtp) {

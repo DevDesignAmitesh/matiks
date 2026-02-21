@@ -2,7 +2,6 @@ import { signupAndSigninSchema, zodErrorMessage } from "@repo/common/common";
 import type { Request, Response } from "express";
 import { responsePlate } from "../../utils";
 import { prisma } from "@repo/db/db";
-import { revision } from "bun";
 import { sign } from "jsonwebtoken";
 import { compare } from "bcryptjs";
 

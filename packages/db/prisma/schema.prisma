@@ -183,3 +183,13 @@ model GameResult {
 
   @@unique([gameId, userId])
 }
+
+model Otp {
+  id            String    @id     @default(uuid())
+
+  value         String
+  identifier    String   @unique
+
+  createdAt     DateTime     @default(now())
+  expiresAt     DateTime     
+}

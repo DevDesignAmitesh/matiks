@@ -3,6 +3,7 @@ import { responsePlate } from "../../utils";
 import { signupAndSigninSchema, zodErrorMessage } from "@repo/common/common";
 import { prisma } from "@repo/db/db";
 import { hash } from "bcryptjs";
+import { emailService } from "@repo/email/email";
 
 export const signupHandler = async (req: Request, res: Response) => {
   try {
@@ -34,7 +35,7 @@ export const signupHandler = async (req: Request, res: Response) => {
     const hashedPassword = await hash(password, 4);
     const userName = email.split("@")[0];
 
-    await prisma.user.create({
+    const user = await prisma.user.create({
       data: {
         email,
         password: hashedPassword,
@@ -42,12 +43,32 @@ export const signupHandler = async (req: Request, res: Response) => {
       },
     });
 
-    const emailOtpRes = await sendOtpToEmail({ email });
+    const value = Array.from({ length: 6 }, () =>
+      Math.floor(Math.random() * 10),
+    ).join("");
 
-    if (!emailOtpRes.success) {
+    const minutes = 5;
+
+    const expiresAt = new Date(Date.now() + minutes * 60 * 1000);
+
+    const otp = await prisma.otp.create({
+      data: {
+        identifier: user.email,
+        value,
+        expiresAt,
+      },
+    });
+
+    const emailOtpRes = await emailService.sendEmail({
+      email: user.email,
+      name: user.userName,
+      otp: otp.value,
+    });
+
+    if (!emailOtpRes) {
       return responsePlate({
         res,
-        message: emailOtpRes.message,
+        message: "unable to send otp on " + email,
         status: 400,
       });
     }
