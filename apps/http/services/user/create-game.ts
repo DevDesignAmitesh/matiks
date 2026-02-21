@@ -29,6 +29,18 @@ export const createGameHandler = async (req: Request, res: Response) => {
       },
     });
 
+    await prisma.gamePlayer.create({
+      data: {
+        gameId: game.id,
+        userId,
+      },
+    });
+
+    await prisma.user.update({
+      where: { id: userId },
+      data: { status: "SEARCHING" },
+    });
+
     return responsePlate({
       res,
       message: "game created successfully",

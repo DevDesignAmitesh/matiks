@@ -26,3 +26,15 @@ export const createGameSchema = z.object({
   timeLimit: z.number(),
   numberOfPlayers: z.number(),
 });
+
+export const MESSAGE_TYPE = {
+  PING: "PING",
+  PONG: "PONG",
+  GAME_STARTS: "GAME_STARTS",
+  GAME_REQUEST: "GAME_REQUEST",
+  GAME_ACCEPT: "GAME_ACCEPT",
+  FRIEND_ACCEPT: "FRIEND_ACCEPT",
+  UN_SUBSCRIBE_ONLINE_USER: "UN_SUBSCRIBE_ONLINE_USER",
+  ONLINE_USER: "ONLINE_USER",
+  FRIEND_REQUEST: "FRIEND_REQUEST",
+};
