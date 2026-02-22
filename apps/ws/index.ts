@@ -1,79 +1,30 @@
 import { WebSocketServer } from "ws";
 import { MESSAGE_TYPE } from "@repo/common/common";
-import { verify } from "jsonwebtoken";
-import type { WebSocket } from "ws";
-import { prisma } from "@repo/db/db";
+import { prisma, type Question, type UserAnswer } from "@repo/db/db";
+import type { ExtendedWS, WsGame, WsUser } from "./types";
+import {
+  generateRandomQuesions,
+  updateUserOnlineStatus,
+  updateUserStatus,
+  verifyUser,
+} from "./utils";
 
-const server = new WebSocketServer({ port: 8080 });
-
-interface ExtendedWS extends WebSocket {
-  userId: string;
-}
-
-interface User {
-  id: string;
-  userName: string;
-  email: string;
-  ws: WebSocket;
-  isOnline: boolean;
-  wantOnlineUsers: boolean;
-  inGame: boolean;
-}
-
-interface Question {
-  id: string;
-  operation: "ADD" | "SUB" | "MUL" | "DIV";
-  operand1: number;
-  operand2: number;
-  answer: number;
-  createdAt: Date;
-}
-
-interface Game {
-  id: string;
-  status:
-    | "WAITING_FOR_PLAYERS"
-    | "IN_PROGRESS"
-    | "COMPLETED"
-    | "CANCELLED"
-    | "EXPIRED";
-  createdBy: string;
-  endTime: Date | null;
-  startTime: Date | null;
-  rematchRequestedBy: string | null;
-  timeLimit: number;
-  numberOfPlayers: number;
-}
+const server = new WebSocketServer({ port: Number(process.env.PORT) });
 
 // userId and users
-const users: Map<string, User> = new Map();
+const users: Map<string, WsUser> = new Map();
 
-// gameId and users
-const games: Map<string, { game: Game; users: User[] }> = new Map();
+// gameId, game with all the details
+const games: Map<string, WsGame> = new Map();
 
-// gameId and questions
-const questions: Map<string, Question[]> = new Map();
+// game id with all the questions
+const randomQuestionsInMemory: Map<string, Question[]> = new Map();
 
-// gameId and question index
+// gameId and question index (for finding that which question to send now)
 const questionCounter: Map<string, number> = new Map();
 
-// question Id and answers at
+// question Id and answers at (for calculating the response from the user of a particular ques.)
 const questionTiming: Map<string, number> = new Map();
-
-const verifyUser = async (token: string) => {
-  try {
-    const decoded = verify(token, process.env.JWT_SECRET!) as {
-      userId: string;
-    };
-
-    return await prisma.user.findFirst({
-      where: { id: decoded.userId },
-    });
-  } catch (e) {
-    console.log("error while verfying user in jwt ", e);
-    return null;
-  }
-};
 
 server.on("connection", async (ws: ExtendedWS, req) => {
   console.log("connected");
@@ -97,13 +48,12 @@ server.on("connection", async (ws: ExtendedWS, req) => {
   ws.userId = user.id;
 
   users.set(user.id, {
-    id: user.id,
+    ...user,
     ws,
-    email: user.email,
-    userName: user.userName,
     isOnline: true,
     wantOnlineUsers: true,
     inGame: false,
+    gameAnswers: [],
   });
 
   updateUserOnlineStatus(true, ws.userId);
@@ -124,8 +74,7 @@ server.on("connection", async (ws: ExtendedWS, req) => {
     }
 
     if (parsedData.type === MESSAGE_TYPE.SUBSCRIBE_ONLINE_USER) {
-      console.log("just checking ", Object.keys(users).length);
-      if (Object.keys(users).length === 1) return;
+      if (users.size === 1) return;
 
       users.forEach((usr) => {
         if (!usr.wantOnlineUsers) return;
@@ -205,9 +154,14 @@ server.on("connection", async (ws: ExtendedWS, req) => {
         inGame: true,
       });
 
-      games.set(game.id, { game, users: [user] });
+      games.set(game.id, {
+        ...game,
+        users: [{ ...user, joinedAt: new Date() }],
+        answers: [],
+        questions: [],
+      });
 
-      updateUserGameStatus("SEARCHING", ws.userId);
+      updateUserStatus("SEARCHING", ws.userId);
 
       users.forEach((usr) => {
         if (usr.ws === ws || !usr.isOnline || usr.inGame) return;
@@ -251,28 +205,25 @@ server.on("connection", async (ws: ExtendedWS, req) => {
         inGame: true,
       });
 
-      const totalUsersInGame = games.get(game.id);
+      const presentGame = games.get(game.id);
 
-      if (!totalUsersInGame) {
+      if (!presentGame) {
         ws.close();
         return;
       }
 
       games.set(game.id, {
-        game: { ...game, endTime, startTime },
-        users: [...totalUsersInGame.users, user],
+        ...game,
+        endTime,
+        startTime,
+        users: [...presentGame.users, { ...user, joinedAt: new Date() }],
+        answers: [],
+        questions: [],
       });
 
-      updateUserGameStatus("SEARCHING", ws.userId);
+      updateUserStatus("SEARCHING", ws.userId);
 
-      const inGameusers = games.get(game.id);
-
-      if (!inGameusers) {
-        ws.close();
-        return;
-      }
-
-      inGameusers.users.forEach((usr) => {
+      presentGame.users.forEach((usr) => {
         usr.ws.send(
           JSON.stringify({
             type: MESSAGE_TYPE.READY,
@@ -294,14 +245,6 @@ server.on("connection", async (ws: ExtendedWS, req) => {
         return;
       }
 
-      // generating questions for using the whole game
-      const randomQuestions = generateRandomQuesions();
-      questions.set(game.id, randomQuestions);
-
-      // setting the
-      let counter = questionCounter.get(game.id) || 0;
-      questionCounter.set(game.id, counter);
-
       const presentGame = games.get(game.id);
 
       if (!presentGame) {
@@ -309,9 +252,20 @@ server.on("connection", async (ws: ExtendedWS, req) => {
         return;
       }
 
+      // setting the
+      let counter = questionCounter.get(game.id) || 0;
+      questionCounter.set(game.id, counter);
+
+      // generating questions for using the whole game
+      const randomQuestions = generateRandomQuesions();
+
+      randomQuestionsInMemory.set(presentGame.id, randomQuestions);
+
       const question = randomQuestions[counter]!;
 
       questionTiming.set(question.id, Date.now());
+
+      presentGame.questions.push(question);
 
       presentGame.users.forEach((usr) => {
         usr.ws.send(
@@ -337,7 +291,14 @@ server.on("connection", async (ws: ExtendedWS, req) => {
         return;
       }
 
-      const allQuestions = questions.get(game.id);
+      const presentGame = games.get(game.id);
+
+      if (!presentGame) {
+        ws.close();
+        return;
+      }
+
+      const allQuestions = randomQuestionsInMemory.get(game.id);
 
       if (!allQuestions) {
         ws.close();
@@ -350,16 +311,45 @@ server.on("connection", async (ws: ExtendedWS, req) => {
         ws.close();
         return;
       }
-
-      // upserting the answer here
-
-      const submittedAt = questionTiming.get(question.id);
+      const startedAt = questionTiming.get(question.id);
       questionTiming.delete(question.id);
 
-      const timeSpent = Date.now() - submittedAt!;
+      const timeSpent = Date.now() - startedAt!;
+
+      const isAnswerExists = presentGame.answers.find(
+        (ans) => ans.questionId == question.id,
+      );
+
+      if (isAnswerExists) {
+        if (question.answer !== Number(answer)) {
+          return;
+        }
+
+        const newAnwer: UserAnswer = { ...isAnswerExists, isCorrect: true };
+        const updatedAnswers = presentGame.answers.filter(
+          (ans) => ans.id !== isAnswerExists.id,
+        );
+
+        presentGame.answers = [...updatedAnswers, newAnwer];
+        return;
+      }
+
+      if (!isAnswerExists) {
+        presentGame.answers.push({
+          answer,
+          answeredAt: new Date(),
+          isCorrect: false,
+          timeSpent,
+          userId: ws.userId,
+          gameId: game.id,
+          id: crypto.randomUUID(),
+          questionId: question.id,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        });
+      }
 
       if (question.answer !== Number(answer)) {
-        // we have already marked the question as isCoorect false so...
         return;
       }
 
@@ -367,28 +357,20 @@ server.on("connection", async (ws: ExtendedWS, req) => {
 
       let counter = questionCounter.get(game.id)!;
       counter += 1;
+      questionCounter.delete(game.id);
 
       questionCounter.set(game.id, counter);
 
-      const realQuestions = questions.get(game.id);
+      const nextQs = allQuestions![counter]!;
 
-      const realQs = realQuestions![counter]!;
-
-      const presentGame = games.get(game.id);
-
-      if (!presentGame) {
-        ws.close();
-        return;
-      }
-
-      questionTiming.set(realQs.id, Date.now());
+      questionTiming.set(nextQs.id, Date.now());
 
       presentGame.users.forEach((usr) => {
         usr.ws.send(
           JSON.stringify({
             type: MESSAGE_TYPE.ROUND_STARTED,
             payload: {
-              question: realQs,
+              question: nextQs,
             },
           }),
         );
@@ -402,45 +384,3 @@ server.on("connection", async (ws: ExtendedWS, req) => {
     updateUserOnlineStatus(false, ws.userId);
   });
 });
-
-async function updateUserOnlineStatus(val: boolean, userId: string) {
-  await prisma.user.update({
-    where: { id: userId },
-    data: { isOnline: val },
-  });
-}
-
-async function updateUserGameStatus(
-  status: "IDOL" | "PLAYING" | "SEARCHING",
-  userId: string,
-) {
-  await prisma.user.update({
-    where: { id: userId },
-    data: { status },
-  });
-}
-
-function getRandomNums() {
-  let a = Math.floor(Math.random() * 10 * 6);
-  let b = Math.floor(Math.random() * 10 * 3);
-
-  return { a, b };
-}
-
-function generateRandomQuesions(): Question[] {
-  let arr: Question[] = [];
-
-  for (let i = 1; i <= 20; i++) {
-    const { a, b } = getRandomNums();
-
-    arr.push({
-      id: crypto.randomUUID(),
-      answer: a + b,
-      createdAt: new Date(),
-      operand1: a,
-      operand2: b,
-      operation: "ADD",
-    });
-  }
-  return arr;
-}
