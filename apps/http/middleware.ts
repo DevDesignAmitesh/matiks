@@ -4,9 +4,11 @@ import { verify } from "jsonwebtoken";
 
 export const middleware = (req: Request, res: Response, next: NextFunction) => {
   try {
+    console.log("middleware started");
     const token = req.headers.authorization;
 
     if (!token) {
+      console.log("token not found")
       return responsePlate({
         res,
         message: "un-authorized",
@@ -17,6 +19,7 @@ export const middleware = (req: Request, res: Response, next: NextFunction) => {
     const bearerToken = token.split("Bearer ")[1];
 
     if (!bearerToken) {
+      console.log("bearer token not found")
       return responsePlate({
         res,
         message: "un-authorized",
@@ -29,6 +32,7 @@ export const middleware = (req: Request, res: Response, next: NextFunction) => {
     };
 
     if (!decoded.userId) {
+      console.log("unable to decode users paylod")
       return responsePlate({
         res,
         message: "un-authorized",
@@ -36,6 +40,7 @@ export const middleware = (req: Request, res: Response, next: NextFunction) => {
       });
     }
 
+    console.log("got all the details and now running next ", decoded);
     req.user = decoded;
     next();
   } catch (e) {

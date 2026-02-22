@@ -6,8 +6,8 @@ const app = express();
 
 app.use(express.json());
 
-app.get("/", (req, res) => {
-  res.send("good hai");
+app.get("/", (_, res) => {
+  res.send("ok");
 });
 
 app.use("/api/v1/auth", authRouter);

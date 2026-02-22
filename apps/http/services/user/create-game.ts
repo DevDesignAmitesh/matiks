@@ -5,10 +5,12 @@ import { prisma } from "@repo/db/db";
 
 export const createGameHandler = async (req: Request, res: Response) => {
   try {
+    console.log("create game started")
     const { userId } = req.user;
     const { data, success, error } = createGameSchema.safeParse(req.body);
 
     if (!success) {
+      console.log("zod error ", zodErrorMessage({ error }));
       return responsePlate({
         res,
         message: "invalid inputs",
@@ -19,6 +21,8 @@ export const createGameHandler = async (req: Request, res: Response) => {
 
     const { mode, numberOfPlayers, timeLimit, type } = data;
 
+    // TODO: add prisma.$transaction
+    console.log("creating game")
     const game = await prisma.game.create({
       data: {
         mode,
@@ -29,8 +33,7 @@ export const createGameHandler = async (req: Request, res: Response) => {
       },
     });
 
-    // TODO: we have to create questions for this game.
-
+    console.log("creating the in game player")
     await prisma.gamePlayer.create({
       data: {
         gameId: game.id,
@@ -38,6 +41,7 @@ export const createGameHandler = async (req: Request, res: Response) => {
       },
     });
 
+    console.log("updating user's status")
     await prisma.user.update({
       where: { id: userId },
       data: { status: "SEARCHING" },
@@ -55,7 +59,7 @@ export const createGameHandler = async (req: Request, res: Response) => {
     console.log("error in createGameHandler ", e);
     return responsePlate({
       res,
-      message: "internal server error",
+      message: "Internal server error",
       status: 500,
     });
   }

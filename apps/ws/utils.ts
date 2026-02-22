@@ -2,6 +2,7 @@ import { prisma, type Question } from "@repo/db/db";
 import { verify } from "jsonwebtoken";
 
 export async function updateUserOnlineStatus(val: boolean, userId: string) {
+  console.log("updating users online status by ", val);
   await prisma.user.update({
     where: { id: userId },
     data: { isOnline: val },
@@ -12,6 +13,7 @@ export async function updateUserStatus(
   status: "IDOL" | "PLAYING" | "SEARCHING",
   userId: string,
 ) {
+  console.log("updating user status by ",status);
   await prisma.user.update({
     where: { id: userId },
     data: { status },

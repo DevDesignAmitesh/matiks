@@ -23,7 +23,7 @@ const randomQuestionsInMemory: Map<string, Question[]> = new Map();
 // gameId and question index (for finding that which question to send now)
 const questionCounter: Map<string, number> = new Map();
 
-// question Id and answers at (for calculating the response from the user of a particular ques.)
+// question Id | userId and answers at (for calculating the response from the user of a particular ques.)
 const questionTiming: Map<string, number> = new Map();
 
 server.on("connection", async (ws: ExtendedWS, req) => {
@@ -32,21 +32,24 @@ server.on("connection", async (ws: ExtendedWS, req) => {
   // we should send token from client like this
   // ws://localhost:8080/?token="TOKEN"
   const token = req.url?.split("?")[1]?.split("=")[1];
+  console.log("extracting token");
 
   if (!token) {
     ws.close();
     return;
   }
 
+  console.log("finding user");
   const user = await verifyUser(token);
 
   if (!user) {
+    console.log("user not found");
     ws.close();
     return;
   }
 
+  console.log("setting users details in memory");
   ws.userId = user.id;
-
   users.set(user.id, {
     ...user,
     ws,
@@ -58,7 +61,7 @@ server.on("connection", async (ws: ExtendedWS, req) => {
 
   updateUserOnlineStatus(true, ws.userId);
 
-  ws.on("error", (err) => console.error(err));
+  ws.on("error", (err) => console.log(err));
 
   ws.on("message", async (data) => {
     const parsedData = JSON.parse(data.toString());
@@ -74,6 +77,7 @@ server.on("connection", async (ws: ExtendedWS, req) => {
     }
 
     if (parsedData.type === MESSAGE_TYPE.SUBSCRIBE_ONLINE_USER) {
+      console.log("subscribe to online_users with the users size ", users.size);
       if (users.size === 1) return;
 
       users.forEach((usr) => {
@@ -92,15 +96,19 @@ server.on("connection", async (ws: ExtendedWS, req) => {
       parsedData.type === MESSAGE_TYPE.FRIEND_REQUEST ||
       parsedData.type === MESSAGE_TYPE.FRIEND_ACCEPT
     ) {
+      console.log("someone sent ", parsedData.type);
       const { otherUserId } = parsedData.payload;
 
+      console.log("finding user from in-memory");
       const user = users.get(otherUserId);
 
       if (!user) {
+        console.log("user not found");
         ws.close();
         return;
       }
 
+      console.log(`sending ${parsedData.type} to the user`);
       user.ws.send(
         JSON.stringify({
           type: parsedData.type,
@@ -116,18 +124,22 @@ server.on("connection", async (ws: ExtendedWS, req) => {
     }
 
     if (parsedData.type === MESSAGE_TYPE.UN_SUBSCRIBE_ONLINE_USER) {
+      console.log("un-subscribe from online_users");
       const user = users.get(ws.userId);
+      console.log("finding that user");
       if (!user) {
         ws.close();
         return;
       }
 
+      console.log("deleting and updating the user in memory");
       users.delete(ws.userId);
       users.set(ws.userId, {
         ...user,
         wantOnlineUsers: false,
       });
 
+      console.log("sending online users to all the user");
       users.forEach((usr) => {
         if (!usr.wantOnlineUsers) return;
 
@@ -142,29 +154,36 @@ server.on("connection", async (ws: ExtendedWS, req) => {
 
     if (parsedData.type === MESSAGE_TYPE.GAME_REQUEST) {
       const { gameId } = parsedData.payload;
+      console.log("sending game request ", gameId);
 
+      console.log("finding game from the db");
       const game = await prisma.game.findFirst({
         where: { id: gameId },
       });
 
       if (!game) {
+        console.log("game not found");
         ws.close();
         return;
       }
 
       const user = users.get(ws.userId);
+      console.log("finding user from the in-memory db");
 
       if (!user) {
+        console.log("user not found");
         ws.close();
         return;
       }
 
+      console.log("deleting and updating user in memroy");
       users.delete(ws.userId);
       users.set(ws.userId, {
         ...user,
         inGame: true,
       });
 
+      console.log("setting game in memory with the user");
       games.set(game.id, {
         ...game,
         users: [{ ...user, joinedAt: new Date() }],
@@ -174,6 +193,7 @@ server.on("connection", async (ws: ExtendedWS, req) => {
 
       updateUserStatus("SEARCHING", ws.userId);
 
+      console.log("sending request to all the users except some people");
       users.forEach((usr) => {
         if (usr.ws === ws || !usr.isOnline || usr.inGame) return;
 
@@ -190,39 +210,52 @@ server.on("connection", async (ws: ExtendedWS, req) => {
 
     if (parsedData.type === MESSAGE_TYPE.GAME_ACCEPT) {
       const { gameId } = parsedData.payload;
+      console.log("accepting game ", gameId);
 
+      console.log("finding game from the db");
       const game = await prisma.game.findFirst({
         where: { id: gameId },
       });
 
       if (!game) {
+        console.log("game not found");
         ws.close();
         return;
       }
 
+      console.log("defining start and end time");
       const startTime = new Date();
+      // game.timeLimit = 1 | 2 | 3 (in minutes)
+      // TODO: maybe we have change the way we are deriving endtime like we have to normalize
+      // it and then denormalize on the fronend like we have done in the skribbl one
       const endTime = new Date(Date.now() + game.timeLimit * 60 * 1000);
 
       const user = users.get(ws.userId);
+      console.log("finding user from in memory");
 
       if (!user) {
+        console.log("user not found");
         ws.close();
         return;
       }
 
+      console.log("deleting and updating user");
       users.delete(ws.userId);
       users.set(ws.userId, {
         ...user,
         inGame: true,
       });
 
+      console.log("finding the current game from in-memory db");
       const presentGame = games.get(game.id);
 
       if (!presentGame) {
+        console.log("game not found");
         ws.close();
         return;
       }
 
+      console.log("updating the game with new user, endtime and startime");
       games.set(game.id, {
         ...game,
         endTime,
@@ -234,6 +267,7 @@ server.on("connection", async (ws: ExtendedWS, req) => {
 
       updateUserStatus("SEARCHING", ws.userId);
 
+      console.log("sending ready to all the users in the game");
       presentGame.users.forEach((usr) => {
         usr.ws.send(
           JSON.stringify({
@@ -246,38 +280,46 @@ server.on("connection", async (ws: ExtendedWS, req) => {
 
     if (parsedData.type === MESSAGE_TYPE.GAME_STARTS) {
       const { gameId } = parsedData.payload;
+      console.log("game starts ", gameId);
 
+      console.log("finding game from the db");
       const game = await prisma.game.findFirst({
         where: { id: gameId },
       });
 
       if (!game) {
+        console.log("game not found");
         ws.close();
         return;
       }
 
+      console.log("finding game from in-memory");
       const presentGame = games.get(game.id);
 
       if (!presentGame) {
+        console.log("in memory game not found");
         ws.close();
         return;
       }
 
-      // setting the
-      let counter = questionCounter.get(game.id) || 0;
+      const counter = questionCounter.get(game.id) || 0;
+      console.log("getting and setting counter from in-memory ", counter);
       questionCounter.set(game.id, counter);
 
-      // generating questions for using the whole game
+      console.log("generating and setting questions for using the whole game");
       const randomQuestions = generateRandomQuesions();
-
       randomQuestionsInMemory.set(presentGame.id, randomQuestions);
 
+      console.log(`getting ${counter} from all questions`);
       const question = randomQuestions[counter]!;
 
-      questionTiming.set(question.id, Date.now());
+      console.log("setting questions starttime with question id and userid");
+      questionTiming.set(`${question.id}-${ws.userId}`, Date.now());
 
+      console.log("pushing question in the present game in meomey");
       presentGame.questions.push(question);
 
+      console.log("sending all the users that game started");
       presentGame.users.forEach((usr) => {
         usr.ws.send(
           JSON.stringify({
@@ -292,100 +334,136 @@ server.on("connection", async (ws: ExtendedWS, req) => {
 
     if (parsedData.type === MESSAGE_TYPE.GAME_ANSWER) {
       const { gameId, questionId, answer } = parsedData.payload;
+      console.log("game answering starts");
 
+      console.log("finding game from the db");
       const game = await prisma.game.findFirst({
         where: { id: gameId },
       });
 
       if (!game) {
+        console.log("game not found");
         ws.close();
         return;
       }
 
       const presentGame = games.get(game.id);
+      console.log("finding game from in-memory");
 
       if (!presentGame) {
+        console.log("in-memory game found");
         ws.close();
         return;
       }
 
+      console.log("getting allquestions from in-memory");
       const allQuestions = randomQuestionsInMemory.get(game.id);
 
       if (!allQuestions) {
+        console.log("questions from in-memory not found");
         ws.close();
         return;
       }
 
+      console.log(
+        "finding that particular question with id from in-memory ",
+        questionId,
+      );
       const question = allQuestions.find((qs) => qs.id === questionId);
 
       if (!question) {
+        console.log("question not found");
         ws.close();
         return;
       }
-      const startedAt = questionTiming.get(question.id);
-      questionTiming.delete(question.id);
 
+      console.log("getting and deleting starttime of that question");
+      const startedAt = questionTiming.get(`${question.id}-${ws.userId}`);
+
+      console.log("calculating time spent");
       const timeSpent = Date.now() - startedAt!;
 
+      console.log("finding answer from in-memory db");
       const isAnswerExists = presentGame.answers.find(
         (ans) => ans.questionId == question.id,
       );
 
       if (isAnswerExists) {
         if (question.answer !== Number(answer)) {
+          console.log("answer already exits but wrong");
           return;
         }
-
+        console.log("answer already exists but right");
         const newAnwer: UserAnswer = { ...isAnswerExists, isCorrect: true };
         const updatedAnswers = presentGame.answers.filter(
           (ans) => ans.id !== isAnswerExists.id,
         );
-
+        console.log(
+          "updating the answer corrent value to true and deleting the time stamp",
+        );
+        questionTiming.delete(`${question.id}-${ws.userId}`);
         presentGame.answers = [...updatedAnswers, newAnwer];
         return;
       }
 
       if (!isAnswerExists) {
-        presentGame.answers.push({
-          answer,
-          answeredAt: new Date(),
-          isCorrect: false,
-          timeSpent,
-          userId: ws.userId,
-          gameId: game.id,
-          id: crypto.randomUUID(),
-          questionId: question.id,
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        });
+        if (question.answer !== Number(answer)) {
+          console.log("answer not found and was wrong");
+          presentGame.answers.push({
+            answer,
+            answeredAt: new Date(),
+            isCorrect: false,
+            timeSpent,
+            userId: ws.userId,
+            gameId: game.id,
+            id: crypto.randomUUID(),
+            questionId: question.id,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          });
+          return;
+        } else {
+          console.log("answer found and was right");
+          questionTiming.delete(`${question.id}-${ws.userId}`);
+          presentGame.answers.push({
+            answer,
+            answeredAt: new Date(),
+            isCorrect: true,
+            timeSpent,
+            userId: ws.userId,
+            gameId: game.id,
+            id: crypto.randomUUID(),
+            questionId: question.id,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          });
+        }
       }
-
-      if (question.answer !== Number(answer)) {
-        return;
-      }
-
-      // sending the next question to the user and create this question in db too
 
       let counter = questionCounter.get(game.id)!;
       counter += 1;
+      console.log(
+        "getting, incrementing deleting and seeting question counter",
+        counter,
+      );
       questionCounter.delete(game.id);
-
       questionCounter.set(game.id, counter);
 
+      console.log("finding the next question from all the questions");
       const nextQs = allQuestions![counter]!;
 
-      questionTiming.set(nextQs.id, Date.now());
+      console.log("setting time stamps for new questions");
+      questionTiming.set(`${nextQs.id}-${ws.userId}`, Date.now());
 
-      presentGame.users.forEach((usr) => {
-        usr.ws.send(
-          JSON.stringify({
-            type: MESSAGE_TYPE.ROUND_STARTED,
-            payload: {
-              question: nextQs,
-            },
-          }),
-        );
-      });
+      console.log("sending new question to that only user");
+      ws.send(
+        JSON.stringify({
+          type: MESSAGE_TYPE.ROUND_STARTED,
+          payload: {
+            question: nextQs,
+          },
+        }),
+      );
     }
   });
 
