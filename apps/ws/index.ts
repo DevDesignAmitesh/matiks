@@ -127,6 +127,17 @@ server.on("connection", async (ws: ExtendedWS, req) => {
         ...user,
         wantOnlineUsers: false,
       });
+
+      users.forEach((usr) => {
+        if (!usr.wantOnlineUsers) return;
+
+        usr.ws.send(
+          JSON.stringify({
+            type: parsedData.type,
+            payload: { users },
+          }),
+        );
+      });
     }
 
     if (parsedData.type === MESSAGE_TYPE.GAME_REQUEST) {
