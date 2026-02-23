@@ -61,6 +61,8 @@ model User {
   gameResult  GameResult[]
   gameAnswers UserAnswer[]
 
+  game        Game[]
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -137,7 +139,10 @@ model GameQuestion {
 model Game {
   id                 String         @id @default(uuid())
   status             gameStatus     @default(WAITING_FOR_PLAYERS)
+  // TODO: it should have foreingkey with User tabel
   createdBy          String
+  creator            User     @relation(fields: [createdBy], references: [id])  
+  
   mode               gameMode
   type               gameType
   endTime            DateTime?

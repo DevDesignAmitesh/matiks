@@ -9,17 +9,6 @@ export async function updateUserOnlineStatus(val: boolean, userId: string) {
   });
 }
 
-export async function updateUserStatus(
-  status: "IDOL" | "PLAYING" | "SEARCHING",
-  userId: string,
-) {
-  console.log("updating user status by ",status);
-  await prisma.user.update({
-    where: { id: userId },
-    data: { status },
-  });
-}
-
 function getRandomNums() {
   let a = Math.floor(Math.random() * 10 * 6);
   let b = Math.floor(Math.random() * 10 * 3);

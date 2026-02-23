@@ -20,6 +20,10 @@ export const friendReqSchema = z.object({
   otherUserId: z.uuid(),
 });
 
+export const acceptGameSchema = z.object({
+  gameId: z.uuid(),
+});
+
 export const acceptFriendReqSchema = z.object({
   otherUserId: z.uuid(),
   status: z.enum(["PENDING", "ACCEPTED", "IGNORED"]),

@@ -19,6 +19,7 @@ export const createGameHandler = async (req: Request, res: Response) => {
       });
     }
 
+    // time limit is in minutes
     const { mode, numberOfPlayers, timeLimit, type } = data;
 
     // TODO: add prisma.$transaction
