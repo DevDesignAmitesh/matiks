@@ -3,6 +3,7 @@ import { Logo } from "./logo";
 import { TbArrowUpRight } from "react-icons/tb";
 import { BlackButton, OutlineButton } from "./buttons";
 import { FaDiscord, FaTwitter, FaYoutube, FaInstagram } from "react-icons/fa";
+import { popupType } from "@/lib/types";
 
 interface FooterProps {
   onClick: (val: popupType) => void;

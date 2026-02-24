@@ -6,6 +6,7 @@ import { Hero } from "@/components/hero";
 import { PopupScreen } from "@/components/popupScreen";
 import { Showcase } from "@/components/showcase";
 import { TotalUsers } from "@/components/totalusers";
+import { popupType } from "@/lib/types";
 import { useState } from "react";
 
 export const LandingPage = () => {

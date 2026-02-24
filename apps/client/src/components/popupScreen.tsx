@@ -9,6 +9,7 @@ import { MdOutlineMail } from "react-icons/md";
 import { FcGoogle } from "react-icons/fc";
 import { GreenInput } from "./inputs";
 import { FaLock } from "react-icons/fa";
+import { popupType } from "@/lib/types";
 
 interface PopupScreenProps {
   type: popupType;
