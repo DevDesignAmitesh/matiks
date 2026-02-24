@@ -26,7 +26,7 @@ export const Logo = ({ type }: { type: "footer" | "header" }) => {
           alt="logo"
           width={100}
           height={100}
-          className="w-14"
+          className="w-12"
         />
       </Link>
     );
