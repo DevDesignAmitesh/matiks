@@ -1,6 +1,7 @@
 "use client";
 
 import { sidebarData } from "@/lib/data";
+import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 export const LeftSideBar = () => {
@@ -12,7 +13,8 @@ export const LeftSideBar = () => {
         const IconComponent = item.icon;
 
         return (
-          <div
+          <Link
+            href={item.href}
             key={item.href}
             className={`w-full rounded-lg flex items-center gap-2 cursor-pointer transition-colors duration-200 ${
               pathName === item.href
@@ -28,7 +30,7 @@ export const LeftSideBar = () => {
             >
               {item.label}
             </p>
-          </div>
+          </Link>
         );
       })}
     </div>

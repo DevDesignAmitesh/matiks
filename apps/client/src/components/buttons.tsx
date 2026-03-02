@@ -2,7 +2,7 @@ import { ReactElement } from "react";
 import { FaArrowRight } from "react-icons/fa";
 
 interface ButtonProps {
-  label: string;
+  label?: string;
   onClick: () => void;
 }
 
