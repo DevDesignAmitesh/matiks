@@ -121,7 +121,7 @@ export const PopupScreen = ({
               }
               icon={<MdOutlineMail fill="#B1FA63" size={20} />}
             />
-            <GrayIconButton
+            {/* <GrayIconButton
               label="CONTINUE WITH GOOGLE'S EMAIL"
               onClick={() =>
                 handleAuthState(
@@ -129,7 +129,7 @@ export const PopupScreen = ({
                 )
               }
               icon={<FcGoogle size={20} />}
-            />
+            /> */}
           </div>
         </div>
       )}

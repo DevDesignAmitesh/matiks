@@ -3,7 +3,7 @@ import { CardLayout } from "./cardlayout";
 
 export const RightSideBar = () => {
   return (
-    <div className="w-80 shrink-0 overflow-auto grid p-4 gap-4 place-content-center">
+    <div className="w-80 shrink-0 overflow-auto grid p-4 gap-4 place-content-start">
       <CardLayout
         label="RATINGS"
         icon={<IoReload className="text-neutral-300" />}

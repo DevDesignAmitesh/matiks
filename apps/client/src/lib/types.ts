@@ -10,21 +10,25 @@ export type popupType =
   | "verify-otp"
   | "signup-action";
 
-export interface CardLayoutProps {
+export type CardLayoutProps = {
   label: string;
   icon?: ReactElement;
   type: "rating" | "challenge" | "download";
 }
 
-export interface SideBarProps {
+export type SideBarProps = {
   label: string;
   href: string;
   icon: IconType;
-  isActive: boolean;
 }
 
-export interface RatingCompProps {
+export type RatingCompProps = {
   src: string;
   label: string;
   val: string;
+}
+
+export type LivePlayers = {
+  id: string;
+  name: string;
 }

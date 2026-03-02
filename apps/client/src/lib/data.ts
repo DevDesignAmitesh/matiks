@@ -1,91 +1,43 @@
 import {
   FaHome,
-  FaPuzzlePiece,
-  FaCalendarDay,
-  FaTrophy,
-  FaFlag,
-  FaNetworkWired,
   FaMedal,
-  FaUsers,
   FaUser,
   FaCommentDots,
-  FaCode,
   FaShareAlt,
 } from "react-icons/fa";
-import { RatingCompProps, SideBarProps } from "./types";
+import { LivePlayers, RatingCompProps, SideBarProps } from "./types";
+import { IoMdSettings } from "react-icons/io";
 
 export const sidebarData: Array<SideBarProps> = [
   {
-    label: "Arena",
-    href: "/arena",
+    label: "Home",
+    href: "/home",
     icon: FaHome,
-    isActive: true,
-  },
-  {
-    label: "Puzzles",
-    href: "/puzzles",
-    icon: FaPuzzlePiece,
-    isActive: false,
-  },
-  // {
-  //   label: "Daily Challenge",
-  //   href: "/daily-challenge",
-  //   icon: FaCalendarDay,
-  //   isActive: false,
-  // },
-  {
-    label: "Compete",
-    href: "/compete",
-    icon: FaTrophy,
-    isActive: false,
-  },
-  {
-    label: "Quests",
-    href: "/quests",
-    icon: FaFlag,
-    isActive: false,
-  },
-  {
-    label: "Nets",
-    href: "/nets",
-    icon: FaNetworkWired,
-    isActive: false,
   },
   {
     label: "Leaderboard",
     href: "/leaderboard",
     icon: FaMedal,
-    isActive: false,
-  },
-  {
-    label: "Group Play",
-    href: "/group-play",
-    icon: FaUsers,
-    isActive: false,
   },
   {
     label: "My Profile",
     href: "/profile",
     icon: FaUser,
-    isActive: false,
+  },
+  {
+    label: "Settings",
+    href: "/settings",
+    icon: IoMdSettings,
   },
   {
     label: "Feedback",
     href: "/feedback",
     icon: FaCommentDots,
-    isActive: false,
   },
-  // {
-  //   label: "Creators Programme",
-  //   href: "/creators",
-  //   icon: FaCode,
-  //   isActive: false,
-  // },
   {
     label: "Social",
     href: "/social",
     icon: FaShareAlt,
-    isActive: false,
   },
 ];
 
@@ -109,5 +61,48 @@ export const ratingsData: Array<RatingCompProps> = [
     label: "memory",
     src: "/memory.png",
     val: "1000",
+  },
+];
+
+export const livePlayers: Array<LivePlayers> = [
+  {
+    id: "1",
+    name: "You",
+  },
+  {
+    id: "2",
+    name: "Sarah",
+  },
+  {
+    id: "3",
+    name: "Mike",
+  },
+  {
+    id: "4",
+    name: "Emma",
+  },
+  {
+    id: "5",
+    name: "John",
+  },
+  {
+    id: "6",
+    name: "Lisa",
+  },
+  {
+    id: "7",
+    name: "David",
+  },
+  {
+    id: "8",
+    name: "Anna",
+  },
+  {
+    id: "9",
+    name: "Chris",
+  },
+  {
+    id: "10",
+    name: "Maya",
   },
 ];
