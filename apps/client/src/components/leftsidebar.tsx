@@ -6,8 +6,6 @@ import { usePathname } from "next/navigation";
 export const LeftSideBar = () => {
   const pathName = usePathname();
 
-  console.log("pathname ", pathName);
-
   return (
     <div className="w-44 shrink-0 border-r border-neutral-700 p-4 gap-1 flex flex-col">
       {sidebarData.map((item) => {

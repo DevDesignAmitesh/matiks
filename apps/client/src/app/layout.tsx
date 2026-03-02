@@ -28,7 +28,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${bebasFont.variable} ${nuniFont.variable} antialiased`}
+        className={`${bebasFont.variable} ${nuniFont.variable} antialiased custom-scrollbar`}
       >
         {children}
       </body>

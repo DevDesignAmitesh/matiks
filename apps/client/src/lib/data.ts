@@ -5,7 +5,7 @@ import {
   FaCommentDots,
   FaShareAlt,
 } from "react-icons/fa";
-import { LivePlayers, RatingCompProps, SideBarProps } from "./types";
+import { Games, LivePlayers, RatingCompProps, SideBarProps } from "./types";
 import { IoMdSettings } from "react-icons/io";
 
 export const sidebarData: Array<SideBarProps> = [
@@ -69,40 +69,14 @@ export const livePlayers: Array<LivePlayers> = [
     id: "1",
     name: "You",
   },
+];
+
+export const games: Array<Games> = [
   {
-    id: "2",
-    name: "Sarah",
-  },
-  {
-    id: "3",
-    name: "Mike",
-  },
-  {
-    id: "4",
-    name: "Emma",
-  },
-  {
-    id: "5",
-    name: "John",
-  },
-  {
-    id: "6",
-    name: "Lisa",
-  },
-  {
-    id: "7",
-    name: "David",
-  },
-  {
-    id: "8",
-    name: "Anna",
-  },
-  {
-    id: "9",
-    name: "Chris",
-  },
-  {
-    id: "10",
-    name: "Maya",
+    id: 1,
+    title: "ONLINE DUELS",
+    subtitle: "Quick-fire math duel",
+    bgColor: "bg-blue-500",
+    image: "/game-1.png",
   },
 ];
