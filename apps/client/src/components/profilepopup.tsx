@@ -3,6 +3,7 @@
 import { MdOutlineKeyboardArrowDown } from "react-icons/md";
 import { FiUser, FiSettings, FiLogOut } from "react-icons/fi";
 import { useState } from "react";
+import Link from "next/link";
 
 export const ProfilePopup = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -49,16 +50,22 @@ export const ProfilePopup = () => {
       >
         <div className="py-2 font-nuni">
           {/* My Profile Option */}
-          <div className="flex items-center gap-3 px-4 py-3 hover:bg-neutral-700/70 cursor-pointer transition-all duration-150 mx-2 rounded-lg">
+          <Link
+            href={"/profile"}
+            className="flex items-center gap-3 px-4 py-3 hover:bg-neutral-700/70 transition-all duration-150 mx-2 rounded-lg"
+          >
             <FiUser className="text-neutral-300 text-lg" />
             <span className="text-white font-medium text-sm">My Profile</span>
-          </div>
+          </Link>
 
           {/* Settings Option */}
-          <div className="flex items-center gap-3 px-4 py-3 hover:bg-neutral-700/70 cursor-pointer transition-all duration-150 mx-2 rounded-lg">
+          <Link
+            href={"/settings"}
+            className="flex items-center gap-3 px-4 py-3 hover:bg-neutral-700/70 transition-all duration-150 mx-2 rounded-lg"
+          >
             <FiSettings className="text-neutral-300 text-lg" />
             <span className="text-white font-medium text-sm">Settings</span>
-          </div>
+          </Link>
 
           {/* Logout Option */}
           <div className="flex items-center gap-3 px-4 py-3 hover:bg-red-600/20 cursor-pointer transition-all duration-150 mx-2 rounded-lg group">
