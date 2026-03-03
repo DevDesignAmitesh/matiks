@@ -50,8 +50,9 @@ export const ProfilePopup = () => {
       >
         <div className="py-2 font-nuni">
           {/* My Profile Option */}
+          {/* TODO: add here token driven user-name */}
           <Link
-            href={"/profile"}
+            href={"/profile/amiteshsingh"}
             className="flex items-center gap-3 px-4 py-3 hover:bg-neutral-700/70 transition-all duration-150 mx-2 rounded-lg"
           >
             <FiUser className="text-neutral-300 text-lg" />

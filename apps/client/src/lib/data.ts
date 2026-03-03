@@ -8,6 +8,9 @@ import {
 import { Games, LivePlayers, RatingCompProps, SideBarProps } from "./types";
 import { IoMdSettings } from "react-icons/io";
 
+// TODO: get here token driven user-name
+const userName = "amiteshsingh";
+
 export const sidebarData: Array<SideBarProps> = [
   {
     label: "Home",
@@ -21,7 +24,7 @@ export const sidebarData: Array<SideBarProps> = [
   },
   {
     label: "My Profile",
-    href: "/profile",
+    href: `/profile/${userName}`,
     icon: FaUser,
   },
   {
