@@ -5,7 +5,7 @@ import { prisma } from "@repo/db/db";
 
 export const createGameHandler = async (req: Request, res: Response) => {
   try {
-    console.log("create game started")
+    console.log("create game started");
     const { userId } = req.user;
     const { data, success, error } = createGameSchema.safeParse(req.body);
 
@@ -22,39 +22,42 @@ export const createGameHandler = async (req: Request, res: Response) => {
     // time limit is in minutes
     const { mode, numberOfPlayers, timeLimit, type } = data;
 
-    // TODO: add prisma.$transaction
-    console.log("creating game")
-    const game = await prisma.game.create({
-      data: {
-        mode,
-        numberOfPlayers,
-        timeLimit,
-        type,
-        createdBy: userId,
-      },
-    });
+    let gameId;
 
-    console.log("creating the in game player")
-    await prisma.gamePlayer.create({
-      data: {
-        gameId: game.id,
-        userId,
-      },
-    });
+    await prisma.$transaction(async (tx) => {
+      console.log("creating game");
+      const game = await tx.game.create({
+        data: {
+          mode,
+          numberOfPlayers,
+          timeLimit,
+          type,
+          createdBy: userId,
+        },
+      });
 
-    console.log("updating user's status")
-    await prisma.user.update({
-      where: { id: userId },
-      data: { status: "SEARCHING" },
+      console.log("creating the in game player");
+      await tx.gamePlayer.create({
+        data: {
+          gameId: game.id,
+          userId,
+        },
+      });
+
+      console.log("updating user's status");
+      await tx.user.update({
+        where: { id: userId },
+        data: { status: "SEARCHING" },
+      });
+
+      gameId = game.id;
     });
 
     return responsePlate({
       res,
       message: "game created successfully",
       status: 201,
-      data: {
-        gameId: game.id,
-      },
+      data: { gameId },
     });
   } catch (e) {
     console.log("error in createGameHandler ", e);

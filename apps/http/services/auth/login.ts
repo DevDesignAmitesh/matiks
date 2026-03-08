@@ -69,9 +69,7 @@ export const loginHandler = async (req: Request, res: Response) => {
     return responsePlate({
       res,
       message: "login successfull",
-      data: {
-        token,
-      },
+      data: { token },
       status: 200,
     });
   } catch (e) {

@@ -141,18 +141,18 @@ export const signupHandler = async (req: Request, res: Response) => {
     if (process.env.NODE_ENV === "development") {
       console.log("otp is 123456 as of dev env");
       const minutes = 5;
-
+      const value = "123456";
       const expiresAt = new Date(Date.now() + minutes * 60 * 1000);
 
       await prisma.otp.upsert({
         where: { identifier: user.email },
         update: {
-          value: "123456",
+          value,
           expiresAt,
         },
         create: {
           identifier: user.email,
-          value: "123456",
+          value,
           expiresAt,
         },
       });

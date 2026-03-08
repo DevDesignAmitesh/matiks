@@ -1,8 +1,3 @@
-// TODO: adding users left logic
-// TODO: while adding answer ( we should add something random to it ) so that
-// users can't see the exact answer
-// TODO: adding logic on the server for handling game ends
-
 import { WebSocketServer } from "ws";
 import { MESSAGE_TYPE } from "@repo/common/common";
 import { prisma, type Question, type UserAnswer } from "@repo/db/db";
@@ -18,7 +13,7 @@ const server = new WebSocketServer({ port: Number(process.env.PORT) });
 // userId and users
 const users: Map<string, WsUser> = new Map();
 
-// gameId, game with all the details
+// gameId, game with all the details (players, answers)
 const games: Map<string, WsGame> = new Map();
 
 // game id with all the questions
@@ -27,7 +22,7 @@ const randomQuestionsInMemory: Map<string, Question[]> = new Map();
 // gameId-userId and question index (for finding that which question to send now)
 const questionCounter: Map<string, number> = new Map();
 
-// question Id | userId and answers at (for calculating the response from the user of a particular ques.)
+// questionId-userId and answers at (for calculating the response from the user of a particular ques.)
 const questionTiming: Map<string, number> = new Map();
 
 server.on("connection", async (ws: ExtendedWS, req) => {
@@ -39,7 +34,6 @@ server.on("connection", async (ws: ExtendedWS, req) => {
   console.log("extracting token");
 
   if (!token) {
-    ws.close();
     return;
   }
 
@@ -48,7 +42,6 @@ server.on("connection", async (ws: ExtendedWS, req) => {
 
   if (!user) {
     console.log("user not found");
-    ws.close();
     return;
   }
 
@@ -105,13 +98,11 @@ server.on("connection", async (ws: ExtendedWS, req) => {
 
       if (!user) {
         console.log("user not found");
-        ws.close();
         return;
       }
 
       if (!sender) {
         console.log("sender not found");
-        ws.close();
         return;
       }
 
@@ -135,7 +126,6 @@ server.on("connection", async (ws: ExtendedWS, req) => {
       const user = users.get(ws.userId);
       console.log("finding that user");
       if (!user) {
-        ws.close();
         return;
       }
 
@@ -168,7 +158,6 @@ server.on("connection", async (ws: ExtendedWS, req) => {
 
       if (!user) {
         console.log("user not found");
-        ws.close();
         return;
       }
 
@@ -179,7 +168,6 @@ server.on("connection", async (ws: ExtendedWS, req) => {
 
       if (!game) {
         console.log("game not found");
-        ws.close();
         return;
       }
 
@@ -202,8 +190,6 @@ server.on("connection", async (ws: ExtendedWS, req) => {
       users.forEach((usr) => {
         if (usr.ws === ws || !usr.isOnline || usr.inGame) return;
 
-        // TODO: we should add ranking based match-making
-
         usr.ws.send(
           JSON.stringify({
             type: parsedData.type,
@@ -224,15 +210,12 @@ server.on("connection", async (ws: ExtendedWS, req) => {
 
       if (!game) {
         console.log("game not found");
-        ws.close();
         return;
       }
 
       console.log("defining start and end time");
       const startTime = new Date();
       // game.timeLimit = 1 | 2 | 3 (in minutes)
-      // TODO: maybe we have change the way we are deriving endtime like we have to normalize
-      // it and then denormalize on the fronend like we have done in the skribbl one
       const endTime = new Date(Date.now() + game.timeLimit * 60 * 1000);
 
       const user = users.get(ws.userId);
@@ -240,7 +223,6 @@ server.on("connection", async (ws: ExtendedWS, req) => {
 
       if (!user) {
         console.log("user not found");
-        ws.close();
         return;
       }
 
@@ -256,11 +238,10 @@ server.on("connection", async (ws: ExtendedWS, req) => {
 
       if (!presentGame) {
         console.log("game not found");
-        ws.close();
         return;
       }
 
-      games.delete(game.id);
+      games.delete(presentGame.id);
 
       console.log("updating the game with new user, endtime and startime");
       games.set(game.id, {
@@ -276,7 +257,6 @@ server.on("connection", async (ws: ExtendedWS, req) => {
 
       if (!newGame) {
         console.log("game not found");
-        ws.close();
         return;
       }
 
@@ -302,7 +282,6 @@ server.on("connection", async (ws: ExtendedWS, req) => {
 
       if (!game) {
         console.log("game not found");
-        ws.close();
         return;
       }
 
@@ -311,7 +290,6 @@ server.on("connection", async (ws: ExtendedWS, req) => {
 
       if (!presentGame) {
         console.log("in memory game not found");
-        ws.close();
         return;
       }
 
@@ -356,7 +334,6 @@ server.on("connection", async (ws: ExtendedWS, req) => {
 
       if (!game) {
         console.log("game not found");
-        ws.close();
         return;
       }
 
@@ -365,7 +342,6 @@ server.on("connection", async (ws: ExtendedWS, req) => {
 
       if (!presentGame) {
         console.log("in-memory game found");
-        ws.close();
         return;
       }
 
@@ -374,7 +350,6 @@ server.on("connection", async (ws: ExtendedWS, req) => {
 
       if (!allQuestions) {
         console.log("questions from in-memory not found");
-        ws.close();
         return;
       }
 
@@ -386,7 +361,6 @@ server.on("connection", async (ws: ExtendedWS, req) => {
 
       if (!question) {
         console.log("question not found");
-        ws.close();
         return;
       }
 
